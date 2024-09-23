@@ -1,6 +1,6 @@
 // api.js
 
-exports.handler = async (event, context) => {
+async (event) => {
   if (event.httpMethod === 'GET') {
     try {
       // Process the GET request as needed
@@ -12,10 +12,9 @@ exports.handler = async (event, context) => {
         body: JSON.stringify(data),
       };
     } catch (error) {
-      // Return an error response if there was an issue processing the request
       return {
         statusCode: 500,
-        body: JSON.stringify({ error: 'Failed to process GET request' }),
+        body: JSON.stringify({ error: `${error}` }),
       };
     }
   }
