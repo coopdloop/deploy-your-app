@@ -1,0 +1,105 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+
+  pre-commit:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.x
+    - name: Install pre-commit
+      run: pip install pre-commit
+    - name: Run pre-commit
+      run: pre-commit run --all-files
+
+  test:
+    needs: pre-commit
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '20'
+    - run: npm ci
+    - run: npm test
+    # - run: npm test
+    #
+  sast:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Run Snyk to check for vulnerabilities
+      uses: snyk/actions/node@master
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        command: test
+
+    # DAST:
+    # https://your-site-name.netlify.app/.netlify/functions/api
+
+  build-and-deploy:
+    needs: sast
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Use Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '20'
+
+    - run: npm ci
+
+    - name: Deploy to Netlify
+      uses: nwtgck/actions-netlify@v1.2
+      with:
+        publish-dir: '.'
+        production-branch: main
+        deploy-message: "Deploy from GitHub Actions"
+        enable-pull-request-comment: false
+        enable-commit-comment: true
+        overwrites-pull-request-comment: true
+      env:
+        NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+        NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+      timeout-minutes: 1
+
+  dast:
+    needs: build-and-deploy
+    runs-on: ubuntu-latest
+    steps:
+    - name: ZAP Scan
+      uses: zaproxy/action-full-scan@v0.4.0
+      with:
+        target: 'https://${{ secrets.NETLIFY_SITE_NAME }}.netlify.app/.netlify/functions/api'
+
+    - name: Create Issue from ZAP Report
+      if: failure()
+      uses: actions/github-script@v6
+      with:
+        github-token: ${{secrets.GITHUB_TOKEN}}
+        script: |
+          const fs = require('fs')
+          const zapReport = JSON.parse(fs.readFileSync('zap-full-scan-results.json', 'utf8'))
+          const highAlerts = zapReport.site[0].alerts.filter(alert => alert.riskcode === "3")
+          if (highAlerts.length > 0) {
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: 'High Risk Vulnerabilities Detected',
+              body: `ZAP scan detected ${highAlerts.length} high risk vulnerabilities. Please review the full scan results.`
+            })
+          }
+

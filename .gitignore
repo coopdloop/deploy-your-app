@@ -1,0 +1,5 @@
+# Local Netlify folder
+.netlify
+
+# 3rd party code
+node_modules/
