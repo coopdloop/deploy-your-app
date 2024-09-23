@@ -1,7 +1,7 @@
-FROM node:20
-WORKDIR /usr/src/app
+FROM public.ecr.aws/lambda/nodejs:20
+
 COPY package*.json ./
-RUN npm install
+RUN npm install --only=production
 COPY . .
-EXPOSE 3000
-CMD [ "node", "app.js" ]
+
+CMD [ "api.handler" ]
