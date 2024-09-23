@@ -78,20 +78,21 @@ jobs:
     needs: sast
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
 
-    - name: Use Node.js
-      uses: actions/setup-node@v2
-      with:
-        node-version: '20'
-
-    - run: npm ci
+    # - name: Use Node.js
+    #   uses: actions/setup-node@v2
+    #   with:
+    #     node-version: '20'
+    #
+    # - run: npm ci
 
     - name: Deploy to Netlify
-      uses: nwtgck/actions-netlify@v1.2
+      uses: nwtgck/actions-netlify@v3.0
       with:
         publish-dir: '.'
         production-branch: main
+        # github-token: ${{ secrets.GITHUB-TOKEN }}
         deploy-message: "Deploy from GitHub Actions"
         enable-pull-request-comment: false
         enable-commit-comment: true
