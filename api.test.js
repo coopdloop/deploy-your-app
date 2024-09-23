@@ -1,6 +1,6 @@
 /* eslint-env jest */
-import request from 'supertest'
-import { localApp } from './api.js'
+const request = require('supertest')
+const localApp = require('./index')
 
 describe('Express App Tests', () => {
   test('GET / should return Hello World', async () => {

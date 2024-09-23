@@ -1,15 +1,11 @@
-FROM node:20-alpine
+FROM public.ecr.aws/lambda/nodejs:20
 
-RUN mkdir -p /home/node/app/node_modules && chown -R node:node /home/node/app
+COPY index.js ${LAMBDA_TASK_ROOT}
 
-WORKDIR /home/node/app
+WORKDIR ${LAMBDA_TASK_ROOT}
 
-COPY . .
-COPY --chown=node:node . .
-USER node
+COPY package*.json ./
 
-RUN npm install
+RUN npm install --omit=dev
 
-EXPOSE 3000
-
-CMD [ "node", "server.js" ]
+CMD ["index.handler"]
