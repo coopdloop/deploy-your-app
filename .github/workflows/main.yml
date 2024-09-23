@@ -102,4 +102,3 @@ jobs:
               body: `ZAP scan detected ${highAlerts.length} high risk vulnerabilities. Please review the full scan results.`
             })
           }
-
