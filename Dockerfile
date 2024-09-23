@@ -1,7 +1,15 @@
-FROM public.ecr.aws/lambda/nodejs:20
+FROM node:20-alpine
 
-COPY package*.json ./
-RUN npm install --only=production
+RUN mkdir -p /home/node/app/node_modules && chown -R node:node /home/node/app
+
+WORKDIR /home/node/app
+
 COPY . .
+COPY --chown=node:node . .
+USER node
 
-CMD [ "api.handler" ]
+RUN npm install
+
+EXPOSE 3000
+
+CMD [ "node", "server.js" ]
