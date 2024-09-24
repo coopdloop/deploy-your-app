@@ -2,6 +2,7 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const helmet = require('helmet')
 const routes = require('./routes')
+
 const app = express()
 
 // Apply middleware conditionally
@@ -15,6 +16,11 @@ if (!process.env.AWS_LAMBDA_FUNCTION_NAME) {
   app.use(bodyParser.json())
   app.use(bodyParser.urlencoded({ extended: true }))
 }
+
+app.use((req, res, next) => {
+  console.log(`Received request: ${req.method} ${req.url}`)
+  next()
+})
 
 app.use('/', routes)
 
