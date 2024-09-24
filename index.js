@@ -24,17 +24,43 @@ app.use((req, res, next) => {
 
 app.use('/', routes)
 
+// Function to normalize event structure
+const normalizeEvent = (event) => {
+  if (event.requestContext && event.requestContext.http) {
+    // This is the AWS Lambda format
+    return {
+      httpMethod: event.requestContext.http.method,
+      path: event.rawPath,
+      headers: event.headers,
+      queryStringParameters: event.queryStringParameters,
+      body: event.body
+    }
+  } else {
+    // This is likely the local testing format
+    return {
+      httpMethod: event.httpMethod,
+      path: event.path,
+      headers: event.headers,
+      queryStringParameters: event.queryStringParameters,
+      body: event.body
+    }
+  }
+}
+
 // AWS Lambda handler
 const handler = async (event, context) => {
   console.log('Received event:', JSON.stringify(event, null, 2))
 
+  const normalizedEvent = normalizeEvent(event)
+  console.log('Normalized event:', JSON.stringify(normalizedEvent, null, 2))
+
   return new Promise((resolve, reject) => {
     const req = {
-      method: (event.httpMethod || 'GET').toUpperCase(),
-      url: event.path || '/',
-      headers: event.headers || {},
-      body: event.body ? JSON.parse(event.body) : {},
-      query: event.queryStringParameters || {}
+      method: normalizedEvent.httpMethod,
+      url: normalizedEvent.path,
+      headers: normalizedEvent.headers || {},
+      body: normalizedEvent.body ? JSON.parse(normalizedEvent.body) : {},
+      query: normalizedEvent.queryStringParameters || {}
     }
 
     console.log('Created req object:', JSON.stringify(req, null, 2))
