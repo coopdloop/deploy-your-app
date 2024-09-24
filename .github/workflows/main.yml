@@ -113,7 +113,7 @@ jobs:
     - name: ZAP Scan
       uses: zaproxy/action-full-scan@v0.10.0
       with:
-        target: 'https://your-api-gateway-url.execute-api.us-east-1.amazonaws.com/dev/your-route'
+        target: 'https://yvrckkcclut3xz7fbkrsv3dgau0snqqw.lambda-url.us-east-1.on.aws/'
 
     - name: Create Issue from ZAP Report
       if: failure()

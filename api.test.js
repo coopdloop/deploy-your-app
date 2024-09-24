@@ -6,6 +6,6 @@ describe('Express App Tests', () => {
   test('GET / should return Hello World', async () => {
     const response = await request(localApp).get('/')
     expect(response.statusCode).toBe(200)
-    expect(response.text).toBe('Hello World!')
+    expect(JSON.parse(response.text)).toStrictEqual({ response: 'Hello World!' })
   })
 })
