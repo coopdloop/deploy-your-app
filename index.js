@@ -23,7 +23,7 @@ app.use((req, res, next) => {
 
 app.get('/', (req, res) => {
   console.log('Root route handler called')
-  res.send('Hello World!')
+  res.send({ response: 'Hello World!' })
 })
 
 // AWS Lambda handler
