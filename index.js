@@ -1,7 +1,7 @@
 const express = require('express')
 const bodyParser = require('body-parser')
 const helmet = require('helmet')
-
+const routes = require('./routes')
 const app = express()
 
 // Apply middleware conditionally
@@ -16,15 +16,7 @@ if (!process.env.AWS_LAMBDA_FUNCTION_NAME) {
   app.use(bodyParser.urlencoded({ extended: true }))
 }
 
-app.use((req, res, next) => {
-  console.log(`Received request: ${req.method} ${req.url}`)
-  next()
-})
-
-app.get('/', (req, res) => {
-  console.log('Root route handler called')
-  res.send({ response: 'Hello World!' })
-})
+app.use('/', routes)
 
 // AWS Lambda handler
 const handler = async (event, context) => {
